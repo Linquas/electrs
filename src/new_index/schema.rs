@@ -296,13 +296,13 @@ impl Indexer {
             self.flush = DBFlush::Enable;
         }
 
-        // update the synced tip *after* the new data is flushed to disk
-        debug!("updating synced tip to {:?}", tip);
-        self.store.txstore_db.put_sync(b"t", &serialize(&tip));
-
         let mut headers = self.store.indexed_headers.write().unwrap();
         headers.apply(new_headers);
         assert_eq!(tip, *headers.tip());
+
+        // update the synced tip *after* the new data is flushed to disk
+        debug!("updating synced tip to {:?}", tip);
+        self.store.txstore_db.put_sync(b"t", &serialize(&tip));
 
         if let FetchFrom::BlkFiles = self.from {
             self.from = FetchFrom::Bitcoind;
